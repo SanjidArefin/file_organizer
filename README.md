@@ -1,73 +1,77 @@
-# file_organizer
+# File Organizer
 
-## What This Program Is For
-`file_organizer` safely organizes mixed files in one or more folders into type-based subfolders using file extensions.
+File Organizer is a Windows desktop app that sorts files into type-based
+subfolders. The GUI is the primary entry point; the legacy command-line script
+is retained as a reference.
 
-It is useful when a dataset has become messy due to bulk collection, export, or scraping workflows.
+## Requirements
 
-## Use Case
-This tool is especially useful for cleaning and organizing data that was randomly downloaded with a web crawler before AI model training.
+- Windows
+- Node.js
+- pnpm
+- Rust and Cargo
+- Python 3.11 or newer
+- PyInstaller
 
-For example, a crawl output folder may contain text, images, videos, archives, and code files mixed together. This script separates them into clear categories so downstream preprocessing and training pipelines can work on cleaner inputs.
+## Development
 
-## How To Run
-### Requirements
-- Python 3.8+
+Install the JavaScript dependencies and start the Tauri development app:
 
-### Command
+```powershell
+pnpm install
+pnpm tauri dev
+```
+
+## Build
+
+Build the Python sidecar, then create the Tauri application bundle:
+
+```powershell
+python backend/build.py
+pnpm tauri build
+```
+
+## Using the GUI
+
+1. Choose a source folder with the folder picker.
+2. Enable **Include subfolders** to organize files recursively while
+   preserving the folder structure. Leave it off to process only files in the
+   selected folder.
+3. Set any run options, then select **Start**.
+4. Review the results and any queued items that need a decision.
+5. Select **Undo** to reverse the most recent organize run.
+
+### Run options
+
+- **Verify with SHA-256** compares file hashes after copying. It provides
+  stronger verification and takes longer than the default size check.
+- **Dry run** previews the planned changes without moving files.
+- **Verbose log** shows per-file operations while organizing.
+
+### Undo
+
+Undo applies to the most recent organize run only. The journal is stored at
+`%APPDATA%/file-organizer/undo.jsonl`. If a journal from an earlier app session
+is found at startup, the app asks whether to undo those changes. Accepting
+restores the previous file layout; dismissing the prompt leaves the recovery
+available through **Review recovered undo**.
+
+## Tests
+
+Run the backend filesystem tests with:
+
+```powershell
+pytest backend/tests -q
+```
+
+Tests create their sample folders in temporary directories and isolate the
+undo journal from the user's app data.
+
+## Legacy CLI reference
+
+`file_organizer.py` is kept as a reference implementation and is not the
+primary way to use the app. Its command syntax is:
+
 ```powershell
 python file_organizer.py <folder_path> [more_folder_paths...] [--verify-hash] [--dry-run] [--verbose]
 ```
-
-Recommended for real runs (safer verification):
-```powershell
-python file_organizer.py <folder_path> --verify-hash --verbose
-```
-
-### Examples
-Dry run (no file changes):
-```powershell
-python file_organizer.py "C:\data\crawl_dump" --dry-run --verbose
-```
-
-Live run with stronger verification:
-```powershell
-python file_organizer.py "C:\data\crawl_dump" --verify-hash --verbose
-```
-
-Multiple folders in one run:
-```powershell
-python file_organizer.py "C:\data\batch1" "C:\data\batch2" --verbose --verify-hash
-```
-
-## How It Works
-- Accepts one or more input folders.
-- Scans only top-level files in each folder.
-- Leaves existing subfolders and nested files unchanged.
-- Detects file category by extension (`video`, `audio`, `image`, `gif`, `text`, `docs`, `archives`, `code`).
-- Creates only the category subfolders that are needed.
-- Copies each file to the matching subfolder using a safe chunked temp-file flow.
-- Handles filename collisions by appending numeric suffixes (`_1`, `_2`, ...).
-- Verifies copied files (size check by default, SHA-256 with `--verify-hash`).
-- Deletes original files only after successful verification.
-- Leaves unknown extensions in the root folder and reports them.
-- On permission issues, raises explicit errors.
-
-## Data Safety Notes
-- Designed for data-loss prevention first.
-- Uses copy-verify-delete instead of direct move.
-- If a file is not verified as copied, the original is not deleted.
-
-## Expected Outcome (Successful Run)
-- The script prints a summary for each processed folder.
-- Detected file types are placed into matching subfolders (`video`, `audio`, `image`, `gif`, `text`, `docs`, `archives`, `code`).
-- Original top-level files are deleted only after successful copy and verification.
-- Unmatched files remain in the root folder and are listed in output.
-- `Failed files` is `0`.
-
-## Expected Outcome (Unsuccessful Run)
-- The script prints an explicit error (for example permission denied, verification failure, copy failure, or invalid path).
-- Files that fail copy/verification are not deleted from their original location.
-- `Failed files` is greater than `0`, or the command exits with a non-zero code.
-- If `--verify-hash` is used on large input, a warning is shown and the run may be cancelled by entering `n`.
-- If errors persist, re-run with `--verbose` and share the terminal output for troubleshooting.

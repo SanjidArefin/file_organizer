@@ -1,0 +1,20 @@
+{
+  "name": "_tauri_tmp",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "tauri": "tauri"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2",
+    "vite": "^8.3.4"
+  },
+  "dependencies": {
+    "@tauri-apps/plugin-dialog": "~2.8.2",
+    "@tauri-apps/plugin-shell": "~2.5.0"
+  }
+}

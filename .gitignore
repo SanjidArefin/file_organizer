@@ -1,0 +1,44 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist/
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Project-specific (agent files — never commit)
+context.md
+plan.md
+
+# Python sidecar build artifacts
+backend/build/
+backend/dist/
+backend/*.spec
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Tauri build output
+src-tauri/target/
+src-tauri/gen/schemas/
+
+
+Thumbs.db
+desktop.ini
